@@ -1,59 +1,73 @@
-var mainApp = angular.module('MarvelApp', ['ngRoute']);
-var requestURL = 'http://gateway.marvel.com:80/v1/public/characters?nameStartsWith=D&limit=50&apikey=06ea344c402ac50cd0af89518b4a9284';
+let mainApp = angular.module('MarvelApp', ['ngRoute']);
+let requestURL = 'http://gateway.marvel.com:80/v1/public/characters?apikey=ea904943b774d2e0bf732697141a07da&limit=20';
 
 mainApp.config(['$routeProvider', function ($routeProvider) {
-    $routeProvider
-        .when('./list', {
+    $routeProvider.
+        when('/list', {
             controller: 'ListController',
             templateUrl: 'sections/listview.html',
-        })
-        .when('./detailed', {
+        }).
+        when('/detailed', {
             controller: 'DetailedListController',
             templateUrl: 'sections/detailedview.html',
+        }).
+        otherwise({
+            redirectTo: '/list',
         });
 }]);
 
-mainApp.controller('ListController', ['$scope', 'DetailedView', function ($scope, DetailedView) {
-    $scope.heroes = []; //empty array for heroes(first ajax request)
-    $scope.query = '';
+mainApp.controller('ListController', ['$scope', '$http', 'SharedStuff', function ($scope, $http, SharedStuff) {
+    $scope.heroes = SharedStuff.allHeroes();
+    console.log($scope.heroes);
+    
+    $scope.getDetails = function (input) {
+        SharedStuff.getDetails(input);
+    };
+//    $scope.current = {
+//    name: input.name,
+//    image: input.thumbnail.path + '.' + input.thumbnail.extension,
+//    };
+}]);
+
+mainApp.controller('DetailedListController', ['$scope', 'SharedStuff', function ($scope, SharedStuff) {
+    console.log('work');
+    
+    $scope.events = SharedStuff.getEvents();
+}]);
+
+mainApp.factory('SharedStuff', function($http) {
+    let heroes = [];
+    let events = [];
     
     $http({
         method: 'GET',
         url: requestURL,
     }).then(function (response) {
-        $scope.heroes = response.data.data.results;
-//        console.log(response);
+        heroes = response.data.data.results;
     });
-}]);
-
-mainApp.controller('DetailedListController', ['$scope', 'DetailedView', function ($scope, DetailedView) {
-    $scope.events = []; //empty array for events(second ajax request)
-
-    $scope.getDetails = function(input) {
-        $http({
-            method: 'get',
-            url: 'http://gateway.marvel.com:80/v1/public/characters/' + input.id + '/events?limit=50&apikey=06ea344c402ac50cd0af89518b4a9284',
+    
+//    let current = {
+//        name: input.name,
+//        image: input.thumbnail.path + '.' + input.thumbnail.extension,
+//        };
+    
+    return {
+        allHeroes: function() {
+            return heroes;
+        },
+        getDetails: function(input) {
+            $http({
+        method: 'GET',
+        url: 'http://gateway.marvel.com:80/v1/public/characters/' + input.id + '/events?limit=50&apikey=06ea344c402ac50cd0af89518b4a9284',
         }).then(function(response) {
             console.log(response);
-            $scope.events = response.data.data.results;
+            events = response.data.data.results;
+        }).then(function() {
+            window.location.href = '#/detailed';
         });
-        $scope.current = {
-            name: input.name,
-            image: input.thumbnail.path + '.' + input.thumbnail.extension,
-        };
+        },
+        getEvents: function() {
+            return events;
+        },
     };
-    $scope.cart = DetailedView.gimme();
-}]);
-
-mainApp.factory('DetailedView', function() {
-    $scope.heroes = []; //empty array for heroes(first ajax request)
-    $scope.query = '';
-    
-    $http({
-        method: 'GET',
-        url: requestURL,
-    }).then(function (response) {
-        $scope.heroes = response.data.data.results;
-//        console.log(response);
-    });
 });

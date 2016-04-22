@@ -2,11 +2,16 @@ var gulp = require('gulp');
 //var sass = require('gulp-sass');
 var browserify = require('gulp-browserify');
 
-gulp.task('default', ['html', 'js', 'css']);
+gulp.task('default', ['html', 'sections', 'js', 'css']);
 
 gulp.task('html', function () {
     return gulp.src('./*.html')
         .pipe(gulp.dest('./public'));
+});
+
+gulp.task('sections', function() {
+   return gulp.src('./sections/*.html')
+        .pipe(gulp.dest('./public/sections'));
 });
 
 gulp.task('css', function () {

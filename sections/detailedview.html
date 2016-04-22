@@ -1,11 +1,10 @@
 <div id="detail">
     <h2>{{ current.name }}</h2>
     <img src="{{ current.image }}">
-    <ul>
+    <ol>
         <li ng-repeat="event in events | limitTo: 5">
             <p>{{ event.title }}</p>
             <p>{{ event.description }}</p>
         </li>
-    </ul>
-    <a href="#/list">List View</a>
+    </ol>
 </div>
